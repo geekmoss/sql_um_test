@@ -75,7 +75,7 @@ $(document).ready(function() {
      */
     function createEventsOnTemplatesList() {
         $('a[id^="template_item_"]').on('click', function() {
-            $.getJSON('/api.php/?request=get_template_detail&tid='+$(this).data('id')).done(function(data) {
+            $.getJSON('/api.php?request=get_template_detail&tid='+$(this).data('id')).done(function(data) {
                 $('#modal_template_detail').modal('show');
                 $('#modal_template_detail_title').html(data.data.title);
                 $('#modal_template_detail_content').html(data.data.content);
@@ -85,7 +85,7 @@ $(document).ready(function() {
     }
 
     function getInfoOfTemplates() {
-        $.getJSON('/api.php/?request=get_info_of_templates').done(function(data) {
+        $.getJSON('/api.php?request=get_info_of_templates').done(function(data) {
             // Označit aktivní šablonu
             if (data.data.active_tid != undefined) {
                 //Elementy
@@ -139,6 +139,28 @@ $(document).ready(function() {
         });
     }
 
+    /**
+     * Funkce pro zobrazení alertu v nastavení
+     *
+     * @param error bool
+     * @param content int
+     */
+    function admin_alert(error, content) {
+        var a_msg = $('#admin_message');
+        var dismiss_button = '<button type="button" class="close" data-dismiss="alert" aria-label="Close"><span aria-hidden="true">&times;</span></button>';
+
+        if (error) {
+            a_msg.addClass('alert-danger');
+            a_msg.removeClass('alert-success');
+        }
+        else {
+            a_msg.removeClass('alert-danger');
+            a_msg.addClass('alert-success');
+        }
+
+        a_msg.html(dismiss_button + content);
+    }
+
     //HERE: Database
 
     $('#query_run').on('click', function() {
@@ -151,7 +173,7 @@ $(document).ready(function() {
         table.addClass('hidden');
         gif.removeClass('hidden');
 
-        $.getJSON('/api.php/?request=query&sql='+sql).done(function(data) {
+        $.getJSON('/api.php?request=query&sql='+sql).done(function(data) {
             msg.removeClass('hidden');
             table.removeClass('hidden');
             gif.addClass('hidden');
@@ -176,7 +198,7 @@ $(document).ready(function() {
 
     //HERE: Templates
 
-    $.getJSON('/api.php/?request=get_templates').done(function(data) {
+    $.getJSON('/api.php?request=get_templates').done(function(data) {
         var buffer = '';
         for (var i = 0; i < data.data.length; i++) {
             var id = data.data[i].id;
@@ -188,13 +210,89 @@ $(document).ready(function() {
     });
 
     $('#modal_template_detail_activate').on('click', function() {
-        $.getJSON('/api.php/?request=activate_template&tid='+$(this).data('id')).done(function(data) {
-
+        $.getJSON('/api.php?request=activate_template&tid='+$(this).data('id')).done(function(data) {
+            getInfoOfTemplates();
         });
         $('#modal_template_detail').modal('hide');
 
         getInfoOfTemplates();
     });
 
+    //HERE: Admin
+    var token_input = $('#token_input');
+    if (getCookie('token') != '') {
+        token_input.val(getCookie('token'));
+    }
+
+    $('#token_button').on('click', function() {
+        setCookie('token', token_input.val(), 365);
+        admin_alert(false, 'Token byl uložen');
+    });
+
+    $('#new_template_reslabel_ta').on('click', function() {
+        $('#new_template_div_ta').removeClass('hidden');
+        $('#new_template_res_ta').attr('checked', true);
+        $('#new_template_res_export').attr('checked', false);
+    });
+    $('#new_template_reslabel_export').on('click', function() {
+        $('#new_template_div_ta').addClass('hidden');
+        $('#new_template_res_ta').attr('checked', false);
+        $('#new_template_res_export').attr('checked', true);
+    });
+
+    $('#new_template_save').on('click', function() {
+        var result = '';
+        var error = false;
+        var title = $('#new_template_name');
+        var content = $('#new_template_content');
+
+
+        if ($('#new_template_res_ta').attr('checked')) {
+            result = $('#new_template_ta').val();
+        }
+        else if ($('#new_template_res_export').attr('checked')) {
+            result = $('#export_json').html();
+        }
+
+        if (result == '') {
+            admin_alert(true, 'Výsledek nesmí být prázdný!');
+            error = true;
+        }
+        if (content.val() == '') {
+            admin_alert(true, 'Zadání nesmí být prázdné!');
+            error = true;
+        }
+        if (title.val() == '') {
+            admin_alert(true, 'Název nesmí být prázdný!');
+            error = true;
+        }
+
+        if (!error) {
+            var token = getCookie('token');
+            if (token != '') {
+                $.post('/api.php?request=add_template', {
+                    token: token,
+                    title: title.val(),
+                    content: content.val(),
+                    result: result
+                }).done(function(data) {
+                    data = JSON.parse(data);
+                    if (data.code == 0) {
+                        admin_alert(false, '<strong>'+data.status+':</strong> '+data.data);
+                    }
+                    else {
+                        admin_alert(true, '<strong>'+data.status+':</strong> '+data.data);
+                    }
+                });
+            }
+            else {
+                admin_alert(true, 'Nebyl doposud zadán žádný token!');
+            }
+        }
+
+        setTimeout(function() {
+            getInfoOfTemplates();
+        }, 1000);
+    });
 });
 

@@ -17,6 +17,7 @@
                         <li role="presentation" class="active"><a href="#tab_query" aria-controls="tab_query" role="tab" data-toggle="tab">Dotaz</a></li>
                         <li role="presentation"><a href="#tab_export" aria-controls="tab_export" role="tab" data-toggle="tab">Export</a></li>
                         <li role="presentation"><a href="#tab_about" aria-controls="tab_about" role="tab" data-toggle="tab">O aplikaci</a></li>
+                        <li role="presentation"><a href="#tab_settings" aria-controls="tab_settings" role="tab" data-toggle="tab">Nastavení</a></li>
                     </ul>
 
                     <!-- Tab panes -->
@@ -45,8 +46,7 @@
                             <h2>O Aplikaci</h2>
                             <p>
                                 Aplikace byla vytvořena za účelem procvičení SQL, pro studenty. Zda-li se dále bude rozvíjet, není jisté ale pokud by někdo měl zájem
-                                aplikace je úmístěna na GitHub.
-                                <!-- TODO: Doplnit link na git -->
+                                aplikace je úmístěna na <a href="https://github.com/geekmoss/sql_um_test">GitHub</a>.
                             </p>
                             <p>
                                 Tuto open-source webovou aplikaci jsem vytvořil já Jakub Janeček roku 2017.
@@ -82,6 +82,61 @@
                                 <br />
                                 Pokud by vám přišlo, že Vaše řešení je správné ale aplikace ho nerozeznala můžete vytvořit issue a toto mi k tomu přidat, rád se na to podvám.
                             </p>
+                        </div>
+                        <div role="tabpanel" class="tab-pane" id="tab_settings">
+                            <div class="alert" id="admin_message"></div>
+                            <!-- Rollback & Set Token -->
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <h3>Rollback</h3>
+                                    <p>Obnovení dat v tabulce <code>employees</code>.</p>
+                                    <div class="text-center">
+                                        <button class="btn btn-danger disabled" disabled>ROLLBACK</button>
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <h3>Token</h3>
+                                    <div class="input-group">
+                                        <input type="text" class="form-control" id="token_input" />
+                                        <span class="input-group-btn">
+                                            <button type="button" class="btn btn-info" id="token_button">Potvrdit</button>
+                                        </span>
+                                    </div>
+                                </div>
+                            </div>
+                            <!-- New Template & .... -->
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <h3>Nový scénář</h3>
+                                    <div>
+                                        <label for="new_template_name">Název:</label>
+                                        <input type="text" id="new_template_name" class="form-control" />
+
+                                        <label for="new_template_content">Popis / Zadání:</label>
+                                        <textarea class="form-control" id="new_template_content"></textarea>
+
+                                        <div class="btn-group btn-group-justified" data-toggle="buttons" style="margin-top: 8px;">
+                                            <label  id="new_template_reslabel_ta" class="btn btn-primary active">
+                                                <input type="radio" name="new_template_type_result" id="new_template_res_ta" value="ta" autocomplete="off" checked>Vlastní výsledek
+                                            </label>
+                                            <label id="new_template_reslabel_export" class="btn btn-primary">
+                                                <input type="radio" name="new_template_type_result" id="new_template_res_export" value="export" autocomplete="off">Aktuální výsledek v exportu
+                                            </label>
+                                        </div>
+                                        <div id="new_template_div_ta" style="margin-top: 8px;">
+                                            <label for="new_template_ta">Výsledek:</label>
+                                            <textarea class="form-control" id="new_template_ta"></textarea>
+                                        </div>
+
+                                        <div class="text-center" style="margin-top: 18px;">
+                                            <button id="new_template_save" class="btn btn-success" style="padding-right: 35px; padding-left: 35px;">Uložit</button>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+
+                                </div>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -123,9 +178,11 @@
             </div>
         </div>
         <script src="./js/jquery-3.1.1.min.js"></script>
-        <script src="./js/bootstrap.min.js"></script>        
+        <script src="./js/bootstrap.min.js"></script>
         <script src="./js/codemirror.js"></script>
         <script src="./js/sql.js"></script>
         <script src="./js/script.js"></script>
+
+    <?php if (file_exists('./analytics.php')) { include './analytics.php'; } ?>
     </body>
 </html>

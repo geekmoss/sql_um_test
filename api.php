@@ -3,18 +3,26 @@
 session_start();
 require './autoloader.php';
 
+# Omezený uživatel - spouštění uživatelských dotazů
 define('DB_HOST', 'localhost');
 define('DB_USER', 'root');
 define('DB_PASS', '');
 define('DB_SCHM', 'sql');
 
+# Plná oprávnění (manipulace s tabulkami)
+define('DB_ADMIN_USER', DB_USER);
+define('DB_ADMIN_PASS', DB_PASS);
+
+
+
 /** @var array $status Seznam chybových stavů */
 $status = [
-    'OK!',                  // 0
+    'OK',                  // 0
     'Connection Error',     // 1
     'Database Error',       // 2
     'App Error',            // 3
     'Other Error',          // 4
+    'Permission Error',     // 5
 ];
 
 /** @var array $json_res Struktura JSON Result */
@@ -234,6 +242,27 @@ if (isset($_GET['request'])) {
                 ];
             }
             fillJsonAndExit(0, $res);
+            break;
+        # Přidání nové šablony
+        case 'add_template':
+            $admin_db = new Database(DB_HOST, DB_ADMIN_USER, DB_ADMIN_PASS, DB_SCHM);
+            $res = $admin_db->query('SELECT * FROM tokens WHERE token = ? AND active = 1', $_POST['token']);
+            if ($res > 0) {
+                $res = $admin_db->insert('templates', [
+                    'title' => $_POST['title'],
+                    'content' => $_POST['content'],
+                    'result' => $_POST['result'],
+                ]);
+                if ($res > 0) {
+                    fillJsonAndExit(0, 'Scénář úspěšně uložen.');
+                }
+                else {
+                    fillJsonAndExit(4, 'Scénař nebyl uložen, zkuste to prosím znovu.');
+                }
+            }
+            else {
+                fillJsonAndExit(5, 'Token zamítnut!');
+            }
             break;
         default:
             fillJsonAndExit(3, 'Nevyhovující hodnota parametru \'request\'');
